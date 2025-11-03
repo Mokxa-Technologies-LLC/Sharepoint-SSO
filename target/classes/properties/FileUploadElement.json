@@ -1,0 +1,407 @@
+[
+  {
+    "title": "@@org.joget.mokxa.fileUploadElement.generalConfig@@",
+    "properties": [
+      {
+        "name": "id",
+        "label": "@@org.joget.mokxa.fileUploadElement.id@@",
+        "type": "autocomplete",
+        "required": "True",
+        "regex_validation": "^[a-zA-Z0-9_]+$",
+        "validation_message": "@@org.joget.mokxa.fileUploadElement.invalidId@@",
+        "options_callback": "FormBuilder.getAllFieldOptions",
+        "description": "@@org.joget.mokxa.fileUploadElement.id.desc@@"
+      },
+      {
+        "name": "label",
+        "label": "@@org.joget.mokxa.fileUploadElement.label@@",
+        "type": "textfield",
+        "required": "True",
+        "value": "@@org.joget.mokxa.fileUploadElement.defaultLabel@@",
+        "description": "@@org.joget.mokxa.fileUploadElement.label.desc@@"
+      }
+    ]
+  },
+  {
+    "title": "@@org.joget.mokxa.fileUploadElement.advancedOptions@@",
+    "properties": [
+      {
+        "label": "@@org.joget.mokxa.fileUploadElement.dataValidation@@",
+        "type": "header"
+      },
+      {
+        "name": "validator",
+        "label": "@@org.joget.mokxa.fileUploadElement.validator@@",
+        "type": "elementselect",
+        "options_ajax": "[CONTEXT_PATH]/web/property/json/getElements?classname=org.joget.apps.form.model.FormValidator",
+        "url": "[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions",
+        "description": "@@org.joget.mokxa.fileUploadElement.validator.desc@@"
+      },
+      {
+        "name": "maxSize",
+        "label": "@@org.joget.mokxa.fileUploadElement.maxSize@@",
+        "type": "textfield",
+        "regex_validation": "^[0-9]+$",
+        "validation_message": "@@org.joget.mokxa.fileUploadElement.invalidSize@@",
+        "description": "@@org.joget.mokxa.fileUploadElement.maxSize.desc@@"
+      },
+      {
+        "name": "maxSizeMsg",
+        "label": "@@org.joget.mokxa.fileUploadElement.maxSizeMsg@@",
+        "type": "textfield",
+        "value": "@@org.joget.mokxa.fileUploadElement.maxSizeMsg.default@@",
+        "description": "@@org.joget.mokxa.fileUploadElement.maxSizeMsg.desc@@"
+      },
+      {
+        "name": "fileType",
+        "label": "@@org.joget.mokxa.fileUploadElement.fileType@@",
+        "type": "textfield",
+        "description": "@@org.joget.mokxa.fileUploadElement.fileType.desc@@"
+      },
+      {
+        "name": "fileTypeMsg",
+        "label": "@@org.joget.mokxa.fileUploadElement.fileTypeMsg@@",
+        "type": "textfield",
+        "value": "@@org.joget.mokxa.fileUploadElement.fileTypeMsg.default@@",
+        "description": "@@org.joget.mokxa.fileUploadElement.fileTypeMsg.desc@@"
+      },
+      {
+        "label": "@@org.joget.mokxa.fileUploadElement.imageResize@@",
+        "type": "header"
+      },
+      {
+        "name": "resizeWidth",
+        "label": "@@org.joget.mokxa.fileUploadElement.resizeWidth@@",
+        "type": "textfield",
+        "description": "@@org.joget.mokxa.fileUploadElement.resizeWidth.desc@@"
+      },
+      {
+        "name": "resizeHeight",
+        "label": "@@org.joget.mokxa.fileUploadElement.resizeHeight@@",
+        "type": "textfield",
+        "description": "@@org.joget.mokxa.fileUploadElement.resizeHeight.desc@@"
+      },
+      {
+        "name": "resizeQuality",
+        "label": "@@org.joget.mokxa.fileUploadElement.resizeQuality@@",
+        "type": "textfield",
+        "value": "0.8",
+        "description": "@@org.joget.mokxa.fileUploadElement.resizeQuality.desc@@"
+      },
+      {
+        "name": "resizeMethod",
+        "label": "@@org.joget.mokxa.fileUploadElement.resizeMethod@@",
+        "type": "selectbox",
+        "value": "",
+        "options": [
+          {
+            "value": "",
+            "label": "@@org.joget.mokxa.fileUploadElement.contain@@"
+          },
+          {
+            "value": "crop",
+            "label": "@@org.joget.mokxa.fileUploadElement.crop@@"
+          }
+        ],
+        "description": "@@org.joget.mokxa.fileUploadElement.resizeMethod.desc@@"
+      },
+      {
+        "label": "@@org.joget.mokxa.fileUploadElement.permissions@@",
+        "type": "header"
+      },
+      {
+        "name": "permissionType",
+        "label": "@@org.joget.mokxa.fileUploadElement.permissionType@@",
+        "type": "selectbox",
+        "value": "",
+        "options": [
+          {
+            "value": "",
+            "label": "@@org.joget.mokxa.fileUploadElement.permission.loggedInUsers@@"
+          },
+          {
+            "value": "public",
+            "label": "@@org.joget.mokxa.fileUploadElement.permission.public@@"
+          },
+          {
+            "value": "custom",
+            "label": "@@org.joget.mokxa.fileUploadElement.permission.custom@@"
+          }
+        ],
+        "description": "@@org.joget.mokxa.fileUploadElement.permissionType.desc@@"
+      },
+      {
+        "name": "permissionPlugin",
+        "label": "@@org.joget.mokxa.fileUploadElement.customPermission@@",
+        "type": "elementselect",
+        "control_field": "permissionType",
+        "control_value": "custom",
+        "control_use_regex": "false",
+        "required": "true",
+        "options_ajax": "[CONTEXT_PATH]/web/property/json/getElements?classname=org.joget.apps.form.model.FormPermission",
+        "url": "[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions",
+        "description": "@@org.joget.mokxa.fileUploadElement.customPermission.desc@@"
+      },
+      {
+        "label": "@@org.joget.mokxa.fileUploadElement.uiOptions@@",
+        "type": "header"
+      },
+      {
+        "name": "size",
+        "label": "@@org.joget.mokxa.fileUploadElement.size@@",
+        "type": "textfield",
+        "description": "@@org.joget.mokxa.fileUploadElement.size.desc@@"
+      },
+      {
+        "name": "multiple",
+        "label": "@@org.joget.mokxa.fileUploadElement.multiple@@",
+        "type": "checkbox",
+        "value": "False",
+        "options": [
+          { "value": "true", "label": "" }
+        ],
+        "description": "@@org.joget.mokxa.fileUploadElement.multiple.desc@@"
+      },
+      {
+        "name": "readonly",
+        "label": "@@org.joget.mokxa.fileUploadElement.readonly@@",
+        "type": "checkbox",
+        "value": "False",
+        "options": [
+          { "value": "true", "label": "" }
+        ],
+        "description": "@@org.joget.mokxa.fileUploadElement.readonly.desc@@"
+      },
+      {
+        "name": "padding",
+        "label": "@@org.joget.mokxa.fileUploadElement.dropzonePadding@@",
+        "type": "textfield",
+        "description": "@@org.joget.mokxa.fileUploadElement.dropzonePadding.desc@@"
+      },
+      {
+        "name": "attachment",
+        "label": "@@org.joget.mokxa.fileUploadElement.download@@",
+        "type": "checkbox",
+        "value": "true",
+        "options": [
+          { "value": "true", "label": "" }
+        ],
+        "description": "@@org.joget.mokxa.fileUploadElement.download.desc@@"
+      }
+    ]
+  },
+  {
+    "title": "@@org.joget.mokxa.fileUploadElement.fileUploadConfiguration@@",
+    "properties": [
+      {
+        "name": "client",
+        "label": "@@org.joget.mokxa.fileUploadElement.client@@",
+        "type": "radio",
+        "options": [
+          { "value": "SHAREPOINT", "label": "@@org.joget.mokxa.fileUploadElement.client.sharepoint@@" }
+        ],
+        "required": "True",
+        "description": "@@org.joget.mokxa.fileUploadElement.client.desc@@"
+      },
+      {
+        "label": "@@org.joget.mokxa.sharePointFileUpload.credentials@@",
+        "type": "header",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.credentials.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "tenantId",
+        "label": "@@org.joget.mokxa.sharePointFileUpload.tenantId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.tenantId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "clientId",
+        "label": "@@org.joget.mokxa.sharePointFileUpload.clientId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.clientId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "clientSecret",
+        "label": "@@org.joget.mokxa.sharePointFileUpload.clientSecret@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.clientSecret.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "siteId",
+        "label": "@@org.joget.mokxa.sharePointFileUpload.siteId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.siteId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "driveId",
+        "label": "@@org.joget.mokxa.sharePointFileUpload.driveId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.driveId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "listId",
+        "label": "@@org.joget.mokxa.sharePointFileUpload.listId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.listId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "sharePointUploadPath",
+        "label": "@@org.joget.mokxa.sharePointFileUpload.sharePointUploadPath@@",
+        "type": "textfield",
+        "required": "True",
+        "value": "/Joget",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.sharePointUploadPath.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "sameFileUpload",
+        "label": "@@org.joget.mokxa.sharePointFileUpload.sameFileUpload@@",
+        "type": "radio",
+        "options": [
+          { "value": "replace", "label": "@@org.joget.mokxa.sharePointFileUpload.replace@@" },
+          { "value": "version", "label": "@@org.joget.mokxa.sharePointFileUpload.version@@" }
+        ],
+        "required": "True",
+        "description": "@@org.joget.mokxa.sharePointFileUpload.sameFileUpload.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      }
+    ]
+  },
+  {
+    "title": "Meta Data Configuration",
+    "properties": [
+      {
+        "name":"formDefId",
+        "label":"Form To Store Meta Data",
+        "type":"selectbox",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/forms/options"
+      },
+      {
+        "label": "Mapping Form Fields",
+        "type": "header"
+      },
+      {
+        "name":"fileIdField",
+        "label":"File Id",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"versionField",
+        "label":"Version",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"nameField",
+        "label":"Name",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"documentTypeField",
+        "label":"Document Type",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"descriptionField",
+        "label":"Description",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"createdDateTimeField",
+        "label":"Created Date Time",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"lastModifiedDateTimeField",
+        "label":"Last Modified Date Time",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"uploadedByField",
+        "label":"Uploaded By",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"sizeField",
+        "label":"Size",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"downloadUrlField",
+        "label":"Download Url",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "label": "Tags And Descriptions",
+        "type": "header"
+      },
+      {
+        "name":"tagsField",
+        "label":"Tags",
+        "type":"selectbox",
+        "options_ajax_on_change":"formDefId",
+        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+      },
+      {
+        "name":"tagsValue",
+        "label":"Tags Value",
+        "type":"textArea"
+      },
+      {
+        "name":"descriptionValue",
+        "label":"Description",
+        "type":"textArea"
+      }
+    ]
+  }
+]

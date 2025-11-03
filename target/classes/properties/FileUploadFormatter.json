@@ -1,0 +1,75 @@
+[
+  {
+    "title": "@@org.joget.mokxa.fileUploadFormatter.fileUploadConfiguration@@",
+    "properties": [
+      {
+        "name": "client",
+        "label": "@@org.joget.mokxa.fileUploadFormatter.client@@",
+        "type": "radio",
+        "options": [
+          { "value": "SHAREPOINT", "label": "@@org.joget.mokxa.fileUploadFormatter.client.sharepoint@@" }
+        ],
+        "required": "True",
+        "description": "@@org.joget.mokxa.fileUploadFormatter.client.desc@@"
+      },
+      {
+        "label": "@@org.joget.mokxa.fileUploadFormatter.credentials@@",
+        "type": "header",
+        "description": "@@org.joget.mokxa.fileUploadFormatter.credentials.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "tenantId",
+        "label": "@@org.joget.mokxa.fileUploadFormatter.tenantId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.fileUploadFormatter.tenantId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "clientId",
+        "label": "@@org.joget.mokxa.fileUploadFormatter.clientId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.fileUploadFormatter.clientId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "clientSecret",
+        "label": "@@org.joget.mokxa.fileUploadFormatter.clientSecret@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.fileUploadFormatter.clientSecret.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "siteId",
+        "label": "@@org.joget.mokxa.fileUploadFormatter.siteId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.fileUploadFormatter.siteId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "driveId",
+        "label": "@@org.joget.mokxa.fileUploadFormatter.driveId@@",
+        "type": "textfield",
+        "required": "True",
+        "description": "@@org.joget.mokxa.fileUploadFormatter.driveId.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      }
+    ]
+  }
+]
