@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SharePointUtil {
     private final String tenantId;
@@ -140,6 +141,7 @@ public class SharePointUtil {
         try {
             // Ensure folder exists before upload
             if (folderPath != null && !folderPath.trim().isEmpty()) {
+                folderPath= encodeFolderPath(folderPath);
                 ensureFolderExists(siteId, driveId,folderPath);
             }
 
@@ -394,5 +396,69 @@ public class SharePointUtil {
             return null;
         }
     }
+
+    public String getEditLink(String siteId, String driveId, String itemId) {
+        try {
+            String endpoint = String.format(
+                    "https://graph.microsoft.com/v1.0/sites/%s/drives/%s/items/%s/createLink",
+                    siteId, driveId, itemId
+            );
+
+            LogUtil.info(getClass().getName(), "Generating edit link for itemId: " + itemId);
+
+            // Create POST request
+            HttpPost post = new HttpPost(endpoint);
+            post.setHeader("Content-Type", "application/json");
+
+            // Body: request an editable link
+            JSONObject body = new JSONObject();
+            body.put("type", "edit");
+            body.put("scope", "organization"); // or "users" / "anonymous" based on your permission policy
+            post.setEntity(new StringEntity(body.toString(), "UTF-8"));
+
+            // Execute API request using your shared helper
+            ApiResponse response = executeRequest(post);
+
+            if (response != null && response.getResponseCode() >=200 && response.getResponseCode()<300 ) {
+                JSONObject json = new JSONObject(response.getResponseBody());
+                if (json.has("link")) {
+                    JSONObject link = json.getJSONObject("link");
+                    String editUrl = link.optString("webUrl", null);
+                    LogUtil.info(getClass().getName(), "Edit link generated: " + editUrl);
+                    return editUrl;
+                } else {
+                    LogUtil.warn(getClass().getName(), "Edit link not found in response JSON.");
+                }
+            } else {
+                LogUtil.warn(getClass().getName(), "Failed to get edit link. Code: " +
+                        (response != null ? response.getResponseCode() : "null"));
+            }
+
+            return null;
+        } catch (Exception e) {
+            LogUtil.error(getClass().getName(), e, "Error generating edit link for itemId: " + itemId);
+            return null;
+        }
+    }
+
+    private String encodeFolderPath(String folderPath) {
+        if (folderPath == null || folderPath.isEmpty()) {
+            return folderPath;
+        }
+        String[] parts = folderPath.split("/");
+        return Arrays.stream(parts)
+                .map(part -> {
+                    try {
+                        return URLEncoder.encode(part, StandardCharsets.UTF_8.toString())
+                                .replace("+", "%20");
+                    } catch (Exception e) {
+                        LogUtil.error(getClass().getName(), e, "Error encoding folder path part: " + part);
+                        return part;
+                    }
+                })
+                .collect(Collectors.joining("/"));
+    }
+
+
 
 }

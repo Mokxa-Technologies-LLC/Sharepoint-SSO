@@ -1,6 +1,6 @@
-org/joget/mokxa/FileUploadFormatter.class
-org/joget/mokxa/FileUploadElement.class
-org/joget/mokxa/util/SharePointUtil.class
-org/joget/mokxa/util/FileServiceUtil.class
-org/joget/mokxa/model/ApiResponse.class
-org/joget/mokxa/Activator.class
+org\joget\mokxa\model\ApiResponse.class
+org\joget\mokxa\util\FileServiceUtil.class
+org\joget\mokxa\Activator.class
+org\joget\mokxa\FileUploadElement.class
+org\joget\mokxa\FileUploadFormatter.class
+org\joget\mokxa\util\SharePointUtil.class

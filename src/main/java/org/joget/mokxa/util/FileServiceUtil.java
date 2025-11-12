@@ -116,6 +116,21 @@ public class FileServiceUtil {
         }
     }
 
+    public String getEditLink(String fileId) {
+        try {
+            if ("SHAREPOINT".equals(client)) {
+                SharePointUtil sp = (SharePointUtil) clientObject;
+                return sp.getEditLink(getSafeString("siteId"), getSafeString("driveId"), fileId);
+
+            } else {
+                throw new UnsupportedOperationException("getFile not supported for client: " + client);
+            }
+        } catch (Exception e) {
+
+            return null;
+        }
+    }
+
     public String viewFile(String fileId) {
         try {
             if ("SHAREPOINT".equals(client)) {

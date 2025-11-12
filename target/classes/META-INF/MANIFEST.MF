@@ -1,27 +1,30 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1762168512759
+Bnd-LastModified: 1762919807917
 Build-Jdk-Spec: 17
 Bundle-Activator: org.joget.mokxa.Activator
-Bundle-ClassPath: .,dependency/httpclient-4.5.13.jar,dependency/httpcore
- -4.4.13.jar,dependency/commons-logging-1.2.jar,dependency/commons-codec
- -1.11.jar,dependency/httpmime-4.5.1.jar
+Bundle-ClassPath: .,dependency/jsp-api-2.0.jar,dependency/servlet-api-2.
+ 4.jar,dependency/httpclient-4.5.13.jar,dependency/httpcore-4.4.13.jar,d
+ ependency/commons-logging-1.2.jar,dependency/commons-codec-1.11.jar,dep
+ endency/httpmime-4.5.1.jar
 Bundle-ManifestVersion: 2
 Bundle-Name: external-file-storage-sharepoint
 Bundle-SymbolicName: org.joget.mokxa.external-file-storage-sharepoint
-Bundle-Version: 9.0.0.SNAPSHOT
+Bundle-Version: 8.0.0.SNAPSHOT
 Created-By: Apache Maven Bundle Plugin 5.1.8
 DynamicImport-Package: *
 Embed-Dependency: *;scope=compile|runtime;inline=false
 Embed-Directory: dependency
 Embed-StripGroup: true
 Embed-Transitive: true
-Embedded-Artifacts: dependency/httpclient-4.5.13.jar;g="org.apache.httpc
- omponents";a="httpclient";v="4.5.13",dependency/httpcore-4.4.13.jar;g="
- org.apache.httpcomponents";a="httpcore";v="4.4.13",dependency/commons-l
- ogging-1.2.jar;g="commons-logging";a="commons-logging";v="1.2",dependen
- cy/commons-codec-1.11.jar;g="commons-codec";a="commons-codec";v="1.11",
- dependency/httpmime-4.5.1.jar;g="org.apache.httpcomponents";a="httpmime
- ";v="4.5.1"
+Embedded-Artifacts: dependency/jsp-api-2.0.jar;g="javax.servlet";a="jsp-
+ api";v="2.0",dependency/servlet-api-2.4.jar;g="javax.servlet";a="servle
+ t-api";v="2.4",dependency/httpclient-4.5.13.jar;g="org.apache.httpcompo
+ nents";a="httpclient";v="4.5.13",dependency/httpcore-4.4.13.jar;g="org.
+ apache.httpcomponents";a="httpcore";v="4.4.13",dependency/commons-loggi
+ ng-1.2.jar;g="commons-logging";a="commons-logging";v="1.2",dependency/c
+ ommons-codec-1.11.jar;g="commons-codec";a="commons-codec";v="1.11",depe
+ ndency/httpmime-4.5.1.jar;g="org.apache.httpcomponents";a="httpmime";v=
+ "4.5.1"
 Import-Package: org.joget.report.dao,org.joget.report.model,org.joget.re
  port.service,org.joget.commons.util,org.joget.plugin.base,org.joget.plu
  gin.property.model,org.joget.plugin.property.service,org.joget.director
@@ -38,5 +41,5 @@ Import-Package: org.joget.report.dao,org.joget.report.model,org.joget.re
 Joget-Description: Upload, view, update, and delete documents in Microso
  ft SharePoint directly from Joget forms.
 Joget-Name: External File Storage [SHAREPOINT]
-Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=9))"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=17))"
 Tool: Bnd-6.3.1.202206071316

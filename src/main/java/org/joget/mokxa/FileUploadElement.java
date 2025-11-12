@@ -16,9 +16,14 @@ import org.joget.mokxa.util.FileServiceUtil;
 import org.json.JSONObject;
 
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+//import jakarta.servlet.ServletException;
+//import jakarta.servlet.http.HttpServletRequest;
+//import jakarta.servlet.http.HttpServletResponse;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +71,8 @@ public class FileUploadElement extends FileUpload {
 
     @Override
     public String renderTemplate(FormData formData, Map dataModel) {
-        String template = "fileUpload.ftl";
+        //String template = "fileUpload.ftl";
+        String template = "sharepointFileUpload.ftl";
         FileServiceUtil fileServiceUtil=null;
         try{
             fileServiceUtil = new FileServiceUtil(getProperties());
@@ -87,6 +93,7 @@ public class FileUploadElement extends FileUpload {
         JSONObject jsonParams = new JSONObject();
         Map<String, String> tempFilePaths = new HashMap<>();
         Map<String, String> filePaths = new HashMap<>();
+        Map<String, String> editPaths = new HashMap<>();
 
         String appId = "";
         String appVersion = "";
@@ -200,9 +207,11 @@ public class FileUploadElement extends FileUpload {
 
                     String filePath = "/web/json/app/" + appId + "/" + appVersion
                             + "/plugin/" + this.getClassName() + "/service?action=download&params=" + safeParams;
-
+                    String editPath= "/web/json/app/" + appId + "/" + appVersion
+                            + "/plugin/" + this.getClassName() + "/service?action=edit&params=" + safeParams;
                     LogUtil.info("Filepaths:",filePath);
                     filePaths.put(filePath, value);
+                    editPaths.put(value,editPath);
                 } catch (Exception ex) {
                     LogUtil.error(getClassName(), ex, "Error processing value: " + value);
                 }
@@ -213,6 +222,7 @@ public class FileUploadElement extends FileUpload {
         try {
             dataModel.put("tempFilePaths", tempFilePaths);
             dataModel.put("filePaths", filePaths);
+            dataModel.put("editLinks", editPaths);
         } catch (Exception ex) {
             LogUtil.warn(getClassName(), "Unable to set dataModel attributes: " + ex.getMessage());
         }
@@ -514,6 +524,43 @@ public class FileUploadElement extends FileUpload {
             String downloadLink = fileServiceUtil.downloadFile(filePath);
 
             LogUtil.info("Download: ",downloadLink);
+            response.sendRedirect(downloadLink);
+        }
+        else if ("edit".equals(action)) {
+            String params = SecurityUtil.decrypt(request.getParameter("params"));
+            JSONObject jsonParams = new JSONObject(params);
+            LogUtil.info("Json Params",jsonParams.toString());
+
+            Map config= new HashMap();
+            String client = jsonParams.getString("client");
+            config.put("client",client);
+
+            String filePath="";
+
+            if(client.equalsIgnoreCase("SHAREPOINT")){
+                String siteId = jsonParams.getString("siteId");
+                String driveId = jsonParams.getString("driveId");
+                //String sharePointPath = jsonParams.getString("sharePointPath");
+                String itemId = jsonParams.getString("itemId");
+                String clientId = jsonParams.getString("clientId");
+                String clientSecret = jsonParams.getString("clientSecret");
+                String tenantId = jsonParams.getString("tenantId");
+
+                config.put("siteId",siteId);
+                config.put("driveId",driveId);
+                //config.put("sharePointPath",sharePointPath);
+                //config.put("itemId",itemId);
+                config.put("clientId",clientId);
+                config.put("clientSecret",clientSecret);
+                config.put("tenantId",tenantId);
+                filePath=itemId;
+            }else{
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            }
+            FileServiceUtil fileServiceUtil = new FileServiceUtil(config);
+            String downloadLink = fileServiceUtil.getEditLink(filePath);
+
+            LogUtil.info("Edit Link: ",downloadLink);
             response.sendRedirect(downloadLink);
         } else {
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);

@@ -1,38 +1,38 @@
 [
   {
-    "title": "@@org.joget.mokxa.fileUploadFormatter.fileUploadConfiguration@@",
+    "title": "FileUpload Client Configuration",
     "properties": [
       {
         "name": "client",
-        "label": "@@org.joget.mokxa.fileUploadFormatter.client@@",
+        "label": "Select Storage Client",
         "type": "radio",
         "options": [
-          { "value": "SHAREPOINT", "label": "@@org.joget.mokxa.fileUploadFormatter.client.sharepoint@@" }
+          { "value": "SHAREPOINT", "label": "Microsoft SharePoint" }
         ],
         "required": "True",
-        "description": "@@org.joget.mokxa.fileUploadFormatter.client.desc@@"
+        "description": "Choose the external storage service to connect with"
       },
       {
-        "label": "@@org.joget.mokxa.fileUploadFormatter.credentials@@",
+        "label": "Connection Credentials",
         "type": "header",
-        "description": "@@org.joget.mokxa.fileUploadFormatter.credentials.desc@@",
+        "description": "Provide authentication details for connecting to SharePoint.",
         "control_field": "client",
         "control_value": "SHAREPOINT",
         "control_use_regex": "false"
       },
       {
         "name": "tenantId",
-        "label": "@@org.joget.mokxa.fileUploadFormatter.tenantId@@",
+        "label": "Tenant ID",
         "type": "textfield",
         "required": "True",
-        "description": "@@org.joget.mokxa.fileUploadFormatter.tenantId.desc@@",
+        "description": "The Microsoft 365 tenant ID associated with your SharePoint.",
         "control_field": "client",
         "control_value": "SHAREPOINT",
         "control_use_regex": "false"
       },
       {
         "name": "clientId",
-        "label": "@@org.joget.mokxa.fileUploadFormatter.clientId@@",
+        "label": "Client ID",
         "type": "textfield",
         "required": "True",
         "description": "@@org.joget.mokxa.fileUploadFormatter.clientId.desc@@",
@@ -42,30 +42,30 @@
       },
       {
         "name": "clientSecret",
-        "label": "@@org.joget.mokxa.fileUploadFormatter.clientSecret@@",
+        "label": "Client Secret",
         "type": "textfield",
         "required": "True",
-        "description": "@@org.joget.mokxa.fileUploadFormatter.clientSecret.desc@@",
+        "description": "Enter the registered application's client secret used for API authentication. Example: AbCdE12345xyz.",
         "control_field": "client",
         "control_value": "SHAREPOINT",
         "control_use_regex": "false"
       },
       {
         "name": "siteId",
-        "label": "@@org.joget.mokxa.fileUploadFormatter.siteId@@",
+        "label": "Site ID",
         "type": "textfield",
         "required": "True",
-        "description": "@@org.joget.mokxa.fileUploadFormatter.siteId.desc@@",
+        "description": "Provide the unique identifier of your target site. Example: mokxa.sharepoint.com, or site GUID.",
         "control_field": "client",
         "control_value": "SHAREPOINT",
         "control_use_regex": "false"
       },
       {
         "name": "driveId",
-        "label": "@@org.joget.mokxa.fileUploadFormatter.driveId@@",
+        "label": "Drive ID",
         "type": "textfield",
         "required": "True",
-        "description": "@@org.joget.mokxa.fileUploadFormatter.driveId.desc@@",
+        "description": "Specify the document library or drive identifier where files will be stored. Example: b!yXz123abcK9ZlXzHdfG.",
         "control_field": "client",
         "control_value": "SHAREPOINT",
         "control_use_regex": "false"
