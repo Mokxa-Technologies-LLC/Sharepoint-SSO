@@ -38,23 +38,68 @@
                     </li>
                 </#list>
             </#if>
-            <#if filePaths??>
-                <#list filePaths?keys as key>
-                    <li>
-                        <a href="${request.contextPath}${key!?html}" target="_blank" ><span class="name">${filePaths[key]!?html}</span></a>
-                         <#if editLinks?? && editLinks[filePaths[key]!?html]??>
-                            <a class="edit-link" href="${request.contextPath}${editLinks[filePaths[key]!?html]!}" target="_blank" style="margin-left:10px;margin-right:10px;color:#0078d4;">
-                                ✏️
-                            </a>
-                         </#if>
-                        <#if element.properties.readonly! != 'true'>
-                            <a class="remove">@@form.fileupload.remove@@</a>
-                        </#if>
+           <#if filePaths??>
+               <#list filePaths?keys as key>
+                   <li class="file-item" style="position:relative;">
+                       <a href="${request.contextPath}${key!?html}" target="_blank">
+                           <span class="name">${filePaths[key]!?html}</span>
+                       </a>
 
-                        <input type="hidden" name="${elementParamName!}_path" value="${filePaths[key]!?html}"/>
-                    </li>
-                </#list>
-            </#if>
+                       <#if element.properties.readonly! != 'true'>
+                           <!-- 3-dot menu -->
+                           <div class="file-menu" style="display:inline-block; position:relative; margin-left:10px;">
+                               <button type="button" class="menu-trigger" style="background:none;border:none;cursor:pointer;font-size:18px;">⋮</button>
+                               <ul class="menu-dropdown" style="
+                                   display:none;
+                                   position:absolute;
+                                   top:25px;
+                                   right:0;
+                                   background:#fff;
+                                   list-style:none;
+                                   padding:5px 0;
+                                   margin:0;
+                                   border:1px solid #ddd;
+                                   border-radius:8px;
+                                   box-shadow:0 2px 8px rgba(0,0,0,0.15);
+                                   z-index:10000;
+                                   width:170px;
+                                   font-size:13px;
+                               ">
+                                   <li class="menu-item remove-file" style="padding:8px 12px;cursor:pointer;">Remove</li>
+                                   <li class="menu-item has-submenu" style="padding:8px 12px;cursor:pointer;position:relative;">Edit ▸
+                                       <ul class="submenu" style="
+                                           display:none;
+                                           position:absolute;
+                                           top:0;
+                                           left:170px;
+                                           background:#fff;
+                                           border:1px solid #ddd;
+                                           border-radius:8px;
+                                           box-shadow:0 2px 8px rgba(0,0,0,0.15);
+                                           list-style:none;
+                                           margin:0;
+                                           padding:5px 0;
+                                           width:180px;
+                                       ">
+                                           <li class="submenu-item open-web" style="padding:8px 12px;cursor:pointer;">Open in Web</li>
+                                           <li class="submenu-item open-teams" style="padding:8px 12px;cursor:pointer;">Open in Teams</li>
+                                           <li class="submenu-item open-native" style="padding:8px 12px;cursor:pointer;">Open in Word App</li>
+                                       </ul>
+                                   </li>
+                               </ul>
+                           </div>
+                       </#if>
+
+                       <input type="hidden" name="${elementParamName!}_path" value="${filePaths[key]!?html}"/>
+
+                       <!-- Hidden edit links for JS -->
+                       <input type="hidden" class="edit-web" value="${request.contextPath}${editLinks[filePaths[key]!?html]!}"/>
+                       <input type="hidden" class="edit-teams" value="${request.contextPath}${editTeamsLinks[filePaths[key]!?html]!}"/>
+                       <input type="hidden" class="edit-native" value="${request.contextPath}${editNativeLinks[filePaths[key]!?html]!}"/>
+                   </li>
+               </#list>
+           </#if>
+
         </ul>
     </div>
     <#if element.properties.readonly! != 'true'>
@@ -75,6 +120,50 @@
                     resizeQuality : "${element.properties.resizeQuality!}",
                     resizeMethod : "${element.properties.resizeMethod!}"
                 });
+
+                // Handle dropdown toggle
+                    $(document).on("click", ".menu-trigger", function(e) {
+                        e.stopPropagation();
+                        $(".menu-dropdown").hide(); // close others
+                        $(this).siblings(".menu-dropdown").toggle();
+                    });
+
+                    // Show submenu on hover
+                    $(document).on("mouseenter", ".has-submenu", function() {
+                        $(this).children(".submenu").show();
+                    }).on("mouseleave", ".has-submenu", function() {
+                        $(this).children(".submenu").hide();
+                    });
+
+                    // Click outside to close
+                    $(document).on("click", function() {
+                        $(".menu-dropdown").hide();
+                    });
+
+                    // Remove file
+                    $(document).on("click", ".remove-file", function() {
+                        $(this).closest("li.file-item").remove();
+                    });
+
+                    // Edit actions
+                    $(document).on("click", ".submenu-item", function(e) {
+                        e.stopPropagation();
+                        const parent = $(this).closest("li.file-item");
+                        const webUrl = parent.find(".edit-web").val();
+                        const teamsUrl = parent.find(".edit-teams").val();
+                        const nativeUrl = parent.find(".edit-native").val();
+
+                        if ($(this).hasClass("open-web")) {
+                            window.open(webUrl, "_blank");
+                        } else if ($(this).hasClass("open-teams")) {
+                            window.open(teamsUrl, "_blank");
+                        } else if ($(this).hasClass("open-native")) {
+                            window.location.href = nativeUrl;
+                        }
+
+                        $(".menu-dropdown").hide(); // close menu after click
+                    });
+
             });
         </script>
     </#if>

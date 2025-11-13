@@ -93,7 +93,9 @@ public class FileUploadElement extends FileUpload {
         JSONObject jsonParams = new JSONObject();
         Map<String, String> tempFilePaths = new HashMap<>();
         Map<String, String> filePaths = new HashMap<>();
-        Map<String, String> editPaths = new HashMap<>();
+        Map<String, String> editLinks = new HashMap<>();
+        Map<String, String> editTeamsLinks = new HashMap<>();
+        Map<String, String> editNativeLinks = new HashMap<>();
 
         String appId = "";
         String appVersion = "";
@@ -207,11 +209,21 @@ public class FileUploadElement extends FileUpload {
 
                     String filePath = "/web/json/app/" + appId + "/" + appVersion
                             + "/plugin/" + this.getClassName() + "/service?action=download&params=" + safeParams;
-                    String editPath= "/web/json/app/" + appId + "/" + appVersion
-                            + "/plugin/" + this.getClassName() + "/service?action=edit&params=" + safeParams;
                     LogUtil.info("Filepaths:",filePath);
+
+                    String editLink= "/web/json/app/" + appId + "/" + appVersion
+                            + "/plugin/" + this.getClassName() + "/service?action=edit&mode=web&params=" + safeParams;
+
+                    String editTeamsLink= "/web/json/app/" + appId + "/" + appVersion
+                            + "/plugin/" + this.getClassName() + "/service?action=edit&mode=teams&params=" + safeParams;
+
+                    String editNativeLink= "/web/json/app/" + appId + "/" + appVersion
+                            + "/plugin/" + this.getClassName() + "/service?action=edit&mode=native&params=" + safeParams;
+
                     filePaths.put(filePath, value);
-                    editPaths.put(value,editPath);
+                    editLinks.put(value,editLink);
+                    editTeamsLinks.put(value,editTeamsLink);
+                    editNativeLinks.put(value,editNativeLink);
                 } catch (Exception ex) {
                     LogUtil.error(getClassName(), ex, "Error processing value: " + value);
                 }
@@ -222,7 +234,9 @@ public class FileUploadElement extends FileUpload {
         try {
             dataModel.put("tempFilePaths", tempFilePaths);
             dataModel.put("filePaths", filePaths);
-            dataModel.put("editLinks", editPaths);
+            dataModel.put("editLinks", editLinks);
+            dataModel.put("editTeamsLinks", editTeamsLinks);
+            dataModel.put("editNativeLinks", editNativeLinks);
         } catch (Exception ex) {
             LogUtil.warn(getClassName(), "Unable to set dataModel attributes: " + ex.getMessage());
         }
@@ -484,6 +498,7 @@ public class FileUploadElement extends FileUpload {
 
     public void webService(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+        String mode = request.getParameter("mode");
         if ("download".equals(action)) {
 
 
@@ -559,6 +574,16 @@ public class FileUploadElement extends FileUpload {
             }
             FileServiceUtil fileServiceUtil = new FileServiceUtil(config);
             String downloadLink = fileServiceUtil.getEditLink(filePath);
+
+            if(mode.equals("teams")){
+                downloadLink = String.format(
+                        "https://teams.microsoft.com/l/file/%s?tenantId=%s&fileType=%s&objectUrl=%s",
+                        filePath, jsonParams.getString("tenantId"), "docx", downloadLink
+                );
+            }else if(mode.equals("native")){
+                String scheme = "ms-word:ofe|u|";
+                downloadLink=scheme+downloadLink;
+            }
 
             LogUtil.info("Edit Link: ",downloadLink);
             response.sendRedirect(downloadLink);
