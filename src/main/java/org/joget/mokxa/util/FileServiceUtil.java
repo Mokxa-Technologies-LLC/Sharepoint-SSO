@@ -116,6 +116,35 @@ public class FileServiceUtil {
         }
     }
 
+    public String getFilePath(String fileId) {
+        try {
+            if ("SHAREPOINT".equals(client)) {
+                SharePointUtil sp = (SharePointUtil) clientObject;
+                ApiResponse response = sp.getFile(getSafeString("siteId"), getSafeString("driveId"), fileId);
+                JSONObject jsonObject = new JSONObject(response.getResponseBody());
+                String siteRoot = "https://mokxa0.sharepoint.com";
+
+                String name = jsonObject.getString("name");
+
+                String parentPath = jsonObject.getJSONObject("parentReference")
+                        .getString("path");
+
+                String relativePath = parentPath.split("root:")[1];
+
+                String serverRelative = "/Shared Documents" + relativePath + "/" + name;
+
+                String encoded = serverRelative.replace(" ", "%20");
+                String fileUrl = siteRoot + encoded;
+                return fileUrl;
+            } else {
+                throw new UnsupportedOperationException("getFile not supported for client: " + client);
+            }
+        } catch (Exception e) {
+
+            return null;
+        }
+    }
+
     public String getEditLink(String fileId) {
         try {
             if ("SHAREPOINT".equals(client)) {
@@ -256,7 +285,6 @@ public class FileServiceUtil {
                 String lastModifiedDateTimeField= (String) properties.get("lastModifiedDateTimeField");
                 String uploadedByField= (String) properties.get("uploadedByField");
                 String sizeField= (String) properties.get("sizeField");
-                String downloadUrlField= (String) properties.get("downloadUrlField");
                 String documentTypeField= (String) properties.get("documentTypeField");
                 String tagsValue= (String) properties.get("tagsValue");
                 String tagsField= (String) properties.get("tagsField");
@@ -329,7 +357,6 @@ public class FileServiceUtil {
                 safeSet(row, lastModifiedDateTimeField, modifiedDate);
                 safeSet(row, uploadedByField, jogetUser);
                 safeSet(row, sizeField, size);
-                safeSet(row, downloadUrlField, fileJson.optString("@microsoft.graph.downloadUrl"));
                 FormRowSet rowSet = new FormRowSet();
                 rowSet.add(row);
 

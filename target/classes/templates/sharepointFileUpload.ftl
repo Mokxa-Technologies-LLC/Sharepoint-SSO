@@ -12,7 +12,7 @@
     <div id="form-fileupload_${elementParamName!}_${element.properties.elementUniqueKey!}" tabindex="0" class="form-fileupload <#if error??>form-error-cell</#if> <#if element.properties.readonly! == 'true'>readonly<#else>dropzone</#if>">
     <#if element.properties.readonly! != 'true'>
         <div class="dz-message needsclick">
-            @@form.fileupload.dropFile@@
+           Drop files here or click to upload.
         </div>
         <input style="display:none" id="${elementParamName!}" name="${elementParamName!}" type="file" size="${element.properties.size!}" <#if error??>class="form-error-cell"</#if> <#if element.properties.multiple! == 'true'>multiple</#if>/>
     </#if>
@@ -62,16 +62,16 @@
                                    border-radius:8px;
                                    box-shadow:0 2px 8px rgba(0,0,0,0.15);
                                    z-index:10000;
-                                   width:170px;
+                                   width:100px;
                                    font-size:13px;
                                ">
                                    <li class="menu-item remove-file" style="padding:8px 12px;cursor:pointer;">Remove</li>
-                                   <li class="menu-item has-submenu" style="padding:8px 12px;cursor:pointer;position:relative;">Edit ▸
+                                   <li class="menu-item has-submenu" style="padding:8px 12px;cursor:pointer;position:relative;">Open ▸
                                        <ul class="submenu" style="
                                            display:none;
                                            position:absolute;
                                            top:0;
-                                           left:170px;
+                                           left:100px;
                                            background:#fff;
                                            border:1px solid #ddd;
                                            border-radius:8px;
@@ -79,7 +79,7 @@
                                            list-style:none;
                                            margin:0;
                                            padding:5px 0;
-                                           width:180px;
+                                           width:130px;
                                        ">
                                            <li class="submenu-item open-web" style="padding:8px 12px;cursor:pointer;">Open in Web</li>
                                            <li class="submenu-item open-teams" style="padding:8px 12px;cursor:pointer;">Open in Teams</li>

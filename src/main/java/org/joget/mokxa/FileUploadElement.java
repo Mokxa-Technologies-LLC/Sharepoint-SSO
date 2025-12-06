@@ -15,11 +15,6 @@ import org.joget.mokxa.model.ApiResponse;
 import org.joget.mokxa.util.FileServiceUtil;
 import org.json.JSONObject;
 
-
-//import jakarta.servlet.ServletException;
-//import jakarta.servlet.http.HttpServletRequest;
-//import jakarta.servlet.http.HttpServletResponse;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -265,7 +260,6 @@ public class FileUploadElement extends FileUpload {
             return "<div class=\"form-fileupload\">Error rendering SharePoint upload element: " + StringEscapeUtils.escapeHtml(ex.getMessage()) + "</div>";
         }
     }
-
 
     @Override
     public FormData formatDataForValidation(FormData formData) {
@@ -551,12 +545,13 @@ public class FileUploadElement extends FileUpload {
             config.put("client",client);
 
             String filePath="";
+            String itemId="";
 
             if(client.equalsIgnoreCase("SHAREPOINT")){
                 String siteId = jsonParams.getString("siteId");
                 String driveId = jsonParams.getString("driveId");
                 //String sharePointPath = jsonParams.getString("sharePointPath");
-                String itemId = jsonParams.getString("itemId");
+                itemId = jsonParams.getString("itemId");
                 String clientId = jsonParams.getString("clientId");
                 String clientSecret = jsonParams.getString("clientSecret");
                 String tenantId = jsonParams.getString("tenantId");
@@ -582,9 +577,9 @@ public class FileUploadElement extends FileUpload {
                 );
             }else if(mode.equals("native")){
                 String scheme = "ms-word:ofe|u|";
-                downloadLink=scheme+downloadLink;
+//                downloadLink=scheme+downloadLink;
+                downloadLink=scheme+fileServiceUtil.getFilePath(itemId);
             }
-
             LogUtil.info("Edit Link: ",downloadLink);
             response.sendRedirect(downloadLink);
         } else {

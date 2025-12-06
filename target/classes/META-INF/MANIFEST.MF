@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1762949768579
+Bnd-LastModified: 1763619800057
 Build-Jdk-Spec: 17
 Bundle-Activator: org.joget.mokxa.Activator
 Bundle-ClassPath: .,dependency/jsp-api-2.0.jar,dependency/servlet-api-2.
