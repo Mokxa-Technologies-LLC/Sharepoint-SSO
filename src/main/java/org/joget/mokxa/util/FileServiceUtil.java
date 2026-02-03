@@ -16,8 +16,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +31,7 @@ public class FileServiceUtil {
 
     public FileServiceUtil(Map config) {
         this.config = config;
-        LogUtil.info("FileServiceUtil",config.toString());
+//        LogUtil.info("FileServiceUtil",config.toString());
         this.client = getSafeString("client");
         initServiceClient();
     }
@@ -116,6 +115,50 @@ public class FileServiceUtil {
         }
     }
 
+    public String getFilePath(String fileId) {
+        try {
+            if ("SHAREPOINT".equals(client)) {
+                SharePointUtil sp = (SharePointUtil) clientObject;
+                ApiResponse response = sp.getFile(getSafeString("siteId"), getSafeString("driveId"), fileId);
+                JSONObject jsonObject = new JSONObject(response.getResponseBody());
+                String siteRoot = "https://mokxa0.sharepoint.com";
+
+                String name = jsonObject.getString("name");
+
+                String parentPath = jsonObject.getJSONObject("parentReference")
+                        .getString("path");
+
+                String relativePath = parentPath.split("root:")[1];
+
+                String serverRelative = "/Shared Documents" + relativePath + "/" + name;
+
+                String encoded = serverRelative.replace(" ", "%20");
+                String fileUrl = siteRoot + encoded;
+                return fileUrl;
+            } else {
+                throw new UnsupportedOperationException("getFile not supported for client: " + client);
+            }
+        } catch (Exception e) {
+
+            return null;
+        }
+    }
+
+    public String getEditLink(String fileId) {
+        try {
+            if ("SHAREPOINT".equals(client)) {
+                SharePointUtil sp = (SharePointUtil) clientObject;
+                return sp.getEditLink(getSafeString("siteId"), getSafeString("driveId"), fileId);
+
+            } else {
+                throw new UnsupportedOperationException("getFile not supported for client: " + client);
+            }
+        } catch (Exception e) {
+
+            return null;
+        }
+    }
+
     public String viewFile(String fileId) {
         try {
             if ("SHAREPOINT".equals(client)) {
@@ -146,6 +189,60 @@ public class FileServiceUtil {
             error.setResponseBody("Delete file error: " + e.getMessage());
             return error;
         }
+    }
+
+
+
+    public List<Map<String, String>> listFilesFromFolder(String folderPath) {
+        List<Map<String, String>> result = new ArrayList<>();
+
+        try {
+            if (!"SHAREPOINT".equals(client)) {
+                throw new UnsupportedOperationException(
+                        "listFilesFromFolder not supported for client: " + client
+                );
+            }
+
+            SharePointUtil sp = (SharePointUtil) clientObject;
+
+            ApiResponse response = sp.listFilesInFolder(
+                    getSafeString("siteId"),
+                    getSafeString("driveId"),
+                    folderPath
+            );
+
+            if (response == null || response.getResponseCode() != 200) {
+                LogUtil.warn(getClass().getName(), "Failed to list files for path: " + folderPath);
+                return result;
+            }
+
+            JSONObject json = new JSONObject(response.getResponseBody());
+            JSONArray items = json.optJSONArray("value");
+
+            if (items == null) {
+                return result;
+            }
+
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.getJSONObject(i);
+
+                // Only files (ignore folders)
+                if (!item.has("file")) {
+                    continue;
+                }
+
+                Map<String, String> fileMap = new HashMap<>();
+                fileMap.put("id", item.optString("id"));
+                fileMap.put("name", item.optString("name"));
+
+                result.add(fileMap);
+            }
+
+        } catch (Exception e) {
+            LogUtil.error(getClass().getName(), e, "Error listing files from folder: " + folderPath);
+        }
+
+        return result;
     }
 
     private String getSafeString(String key) {
@@ -232,7 +329,7 @@ public class FileServiceUtil {
                 String formDefId = (String) properties.get("formDefId");
 
                 //form fields
-                LogUtil.info(getClass().getName(), "Getting form fields " + itemId);
+//                LogUtil.info(getClass().getName(), "Getting form fields " + itemId);
                 String fileIdField = (String) properties.get("fileIdField");
                 String versionField= (String) properties.get("versionField");
                 String nameField= (String) properties.get("nameField");
@@ -241,7 +338,6 @@ public class FileServiceUtil {
                 String lastModifiedDateTimeField= (String) properties.get("lastModifiedDateTimeField");
                 String uploadedByField= (String) properties.get("uploadedByField");
                 String sizeField= (String) properties.get("sizeField");
-                String downloadUrlField= (String) properties.get("downloadUrlField");
                 String documentTypeField= (String) properties.get("documentTypeField");
                 String tagsValue= (String) properties.get("tagsValue");
                 String tagsField= (String) properties.get("tagsField");
@@ -300,7 +396,7 @@ public class FileServiceUtil {
                 AppDefinition appDef = AppUtil.getCurrentAppDefinition();
                 String tableName = appService.getFormTableName(appDef, formDefId);
 
-                LogUtil.info(getClass().getName(), "Setting Rows " + itemId);
+//                LogUtil.info(getClass().getName(), "Setting Rows " + itemId);
                 FormRow row = new FormRow();
                 row.setId(id);
 
@@ -314,13 +410,12 @@ public class FileServiceUtil {
                 safeSet(row, lastModifiedDateTimeField, modifiedDate);
                 safeSet(row, uploadedByField, jogetUser);
                 safeSet(row, sizeField, size);
-                safeSet(row, downloadUrlField, fileJson.optString("@microsoft.graph.downloadUrl"));
                 FormRowSet rowSet = new FormRowSet();
                 rowSet.add(row);
 
                 appService.storeFormData(formDefId, tableName,rowSet,id);
 
-                LogUtil.info(getClass().getName(), "Metadata stored in Joget successfully for itemId: " + itemId);
+//                LogUtil.info(getClass().getName(), "Metadata stored in Joget successfully for itemId: " + itemId);
             }
         } catch (Exception e) {
             LogUtil.warn(getClass().getName(), "Metadata stored in Joget failed for itemId: " + itemId);

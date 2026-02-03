@@ -262,16 +262,6 @@
         "control_use_regex": "false"
       },
       {
-        "name": "listId",
-        "label": "@@org.joget.mokxa.sharePointFileUpload.listId@@",
-        "type": "textfield",
-        "required": "True",
-        "description": "@@org.joget.mokxa.sharePointFileUpload.listId.desc@@",
-        "control_field": "client",
-        "control_value": "SHAREPOINT",
-        "control_use_regex": "false"
-      },
-      {
         "name": "sharePointUploadPath",
         "label": "@@org.joget.mokxa.sharePointFileUpload.sharePointUploadPath@@",
         "type": "textfield",
@@ -292,6 +282,19 @@
         ],
         "required": "True",
         "description": "@@org.joget.mokxa.sharePointFileUpload.sameFileUpload.desc@@",
+        "control_field": "client",
+        "control_value": "SHAREPOINT",
+        "control_use_regex": "false"
+      },
+      {
+        "name": "enableSyncFiles",
+        "label": "Enable Sync Files on load",
+        "type": "checkBox",
+        "options": [
+          { "value": "true", "label": "" }
+        ],
+        "required": "False",
+        "description": "It will sync all files to joget when form loads",
         "control_field": "client",
         "control_value": "SHAREPOINT",
         "control_use_regex": "false"
@@ -370,13 +373,6 @@
       {
         "name":"sizeField",
         "label":"Size",
-        "type":"selectbox",
-        "options_ajax_on_change":"formDefId",
-        "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
-      },
-      {
-        "name":"downloadUrlField",
-        "label":"Download Url",
         "type":"selectbox",
         "options_ajax_on_change":"formDefId",
         "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"

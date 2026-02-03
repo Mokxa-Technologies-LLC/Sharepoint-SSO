@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1762168512759
+Bnd-LastModified: 1770120951662
 Build-Jdk-Spec: 17
 Bundle-Activator: org.joget.mokxa.Activator
 Bundle-ClassPath: .,dependency/httpclient-4.5.13.jar,dependency/httpcore
@@ -38,5 +38,5 @@ Import-Package: org.joget.report.dao,org.joget.report.model,org.joget.re
 Joget-Description: Upload, view, update, and delete documents in Microso
  ft SharePoint directly from Joget forms.
 Joget-Name: External File Storage [SHAREPOINT]
-Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=9))"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=17))"
 Tool: Bnd-6.3.1.202206071316

@@ -23,9 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SharePointUtil {
     private final String tenantId;
@@ -45,7 +44,7 @@ public class SharePointUtil {
 
     public ApiResponse authenticate() {
         ApiResponse apiResponse = new ApiResponse();
-        LogUtil.info(getClass().getName(), "Authenticating with Microsoft Graph API...");
+        //LogUtil.info(getClass().getName(), "Authenticating with Microsoft Graph API...");
         String tokenUrl = "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
 
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
@@ -68,7 +67,7 @@ public class SharePointUtil {
                 if (code == 200) {
                     JSONObject json = new JSONObject(body);
                     accessToken = json.getString("access_token");
-                    LogUtil.info(getClass().getName(), "Access token obtained successfully.");
+                    //LogUtil.info(getClass().getName(), "Access token obtained successfully.");
                     return apiResponse;
                 } else {
                     LogUtil.warn(getClass().getName(), "Authentication failed. Code: " + code + " Body: " + body);
@@ -97,8 +96,8 @@ public class SharePointUtil {
                 apiResponse.setResponseCode(response.getStatusLine().getStatusCode());
                 String body = response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "";
                 apiResponse.setResponseBody(body);
-                LogUtil.info(getClass().getName(),
-                        "Request [" + request.getMethod() + "] " + request.getURI() + " → Code: " + code+ " → Response: " + body);
+//                LogUtil.info(getClass().getName(),
+//                        "Request [" + request.getMethod() + "] " + request.getURI() + " → Code: " + code+ " → Response: " + body);
                 return apiResponse;
             }
         } catch (Exception e) {
@@ -117,7 +116,7 @@ public class SharePointUtil {
                 endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s/drives/%s/root:/%s:/children", siteId, driveId, parentPath);
             }
 
-            LogUtil.info(getClass().getName(), "Creating folder: " + folderName + " at path: " + parentPath);
+            //LogUtil.info(getClass().getName(), "Creating folder: " + folderName + " at path: " + parentPath);
 
             JSONObject json = new JSONObject()
                     .put("name", folderName)
@@ -127,7 +126,7 @@ public class SharePointUtil {
             HttpPost post = new HttpPost(endpoint);
             post.setEntity(new StringEntity(json.toString(), ContentType.APPLICATION_JSON));
 
-            LogUtil.info(getClass().getName(), "Creating folder: " + folderName);
+           // LogUtil.info(getClass().getName(), "Creating folder: " + folderName);
             ApiResponse apiResponse = executeRequest(post);
             return apiResponse;
         } catch (Exception e) {
@@ -140,6 +139,7 @@ public class SharePointUtil {
         try {
             // Ensure folder exists before upload
             if (folderPath != null && !folderPath.trim().isEmpty()) {
+                folderPath= encodeFolderPath(folderPath);
                 ensureFolderExists(siteId, driveId,folderPath);
             }
 
@@ -158,14 +158,14 @@ public class SharePointUtil {
 
                 HttpPut put = new HttpPut(endpoint);
                 put.setEntity(new FileEntity(file, ContentType.DEFAULT_BINARY));
-                LogUtil.info(getClass().getName(), "Uploading small file: " + file.getName());
+                //LogUtil.info(getClass().getName(), "Uploading small file: " + file.getName());
 
                 ApiResponse apiResponse= executeRequest(put);
                 String itemId =getItemIdFromApiResponse(apiResponse);
                 return itemId;
             } else {
                 // Large file upload (resumable session)
-                LogUtil.info(getClass().getName(), "Starting resumable upload for large file: " + file.getName());
+                //LogUtil.info(getClass().getName(), "Starting resumable upload for large file: " + file.getName());
 
                 String createSessionEndpoint = String.format(
                         "https://graph.microsoft.com/v1.0/sites/%s/drives/%s/root:%s/%s:/createUploadSession",
@@ -216,7 +216,7 @@ public class SharePointUtil {
                         uploaded += bytesRead;
                     }
 
-                    LogUtil.info(getClass().getName(), "Resumable upload completed for file: " + file.getName());
+                    //LogUtil.info(getClass().getName(), "Resumable upload completed for file: " + file.getName());
                     String itemId =getItemIdFromApiResponse(sessionResp);
                     return itemId;
                 }
@@ -236,7 +236,7 @@ public class SharePointUtil {
                     siteId, driveId, itemId);
 
             HttpGet get = new HttpGet(endpoint);
-            LogUtil.info(getClass().getName(), "Fetching file itemId: " + itemId);
+            //LogUtil.info(getClass().getName(), "Fetching file itemId: " + itemId);
             return executeRequest(get);
         } catch (Exception e) {
             LogUtil.error(getClass().getName(), e, "Error fetching file itemId: " + itemId);
@@ -252,7 +252,7 @@ public class SharePointUtil {
                     siteId, driveId, itemId);
 
             HttpDelete delete = new HttpDelete(endpoint);
-            LogUtil.info(getClass().getName(), "Deleting file itemId: " + itemId);
+            //LogUtil.info(getClass().getName(), "Deleting file itemId: " + itemId);
             return executeRequest(delete);
         } catch (Exception e) {
             LogUtil.error(getClass().getName(), e, "Error deleting file itemId: " + itemId);
@@ -266,7 +266,7 @@ public class SharePointUtil {
         }
 
         String normalizedPath = folderPath.startsWith("/") ? folderPath : "/" + folderPath;
-        LogUtil.info("Normalize path", normalizedPath);
+        //LogUtil.info("Normalize path", normalizedPath);
 
         // Check if folder exists
         String checkUrl = String.format(
@@ -285,8 +285,8 @@ public class SharePointUtil {
             parent = parent.replaceAll("^/+", "").replaceAll("/+$", "");
             name = name.replaceAll("^/+", "").replaceAll("/+$", "");
 
-            LogUtil.info("Parent", parent);
-            LogUtil.info("Name", name);
+//            LogUtil.info("Parent", parent);
+//            LogUtil.info("Name", name);
 
             if (!parent.isEmpty()) {
                 ensureFolderExists(siteId, driveId,parent); // recursive call for parent
@@ -297,7 +297,7 @@ public class SharePointUtil {
                 throw new IOException("Failed to create folder: " + folderPath + " → " +
                         (createRes != null ? createRes.getResponseBody() : "No response"));
             }
-            LogUtil.info(getClass().getName(), "Created folder: " + folderPath);
+            //LogUtil.info(getClass().getName(), "Created folder: " + folderPath);
         }
     }
 
@@ -310,7 +310,7 @@ public class SharePointUtil {
             JSONObject response = new JSONObject(apiResponse.getResponseBody());
             String itemId = response.optString("id", null);
 
-            LogUtil.info(getClassName(), "Extracted drive item ID: " + itemId);
+            //LogUtil.info(getClassName(), "Extracted drive item ID: " + itemId);
             return itemId;
         } catch (Exception e) {
             LogUtil.error(getClassName(), e, "Failed to extract item ID from API response.");
@@ -334,7 +334,7 @@ public class SharePointUtil {
 
                 if (listItem != null) {
                     String listItemId = listItem.optString("id", null);
-                    LogUtil.info(getClassName(), "Found listItem ID: " + listItemId + " for drive item: " + itemId);
+//                    LogUtil.info(getClassName(), "Found listItem ID: " + listItemId + " for drive item: " + itemId);
                     return listItemId;
                 } else {
                     LogUtil.warn(getClassName(), "listItem not found in expanded response for drive item: " + itemId);
@@ -364,11 +364,11 @@ public class SharePointUtil {
             HttpPatch patch = new HttpPatch(endpoint);
             patch.setEntity(new StringEntity(metadata.toString(), ContentType.APPLICATION_JSON));
 
-            LogUtil.info(getClassName(), "Updating metadata for item: " + listItemId + " → " + metadata.toString());
+//            LogUtil.info(getClassName(), "Updating metadata for item: " + listItemId + " → " + metadata.toString());
 
             ApiResponse resp = executeRequest(patch);
             if (resp != null) {
-                LogUtil.info(getClassName(), "Metadata updated successfully. Code: " + resp.getResponseCode());
+//                LogUtil.info(getClassName(), "Metadata updated successfully. Code: " + resp.getResponseCode());
             } else {
                 LogUtil.warn(getClassName(), "Metadata update returned null response.");
             }
@@ -384,7 +384,7 @@ public class SharePointUtil {
                     siteId, driveId, itemId
             );
 
-            LogUtil.info(getClass().getName(), "Fetching versions for itemId: " + itemId);
+//            LogUtil.info(getClass().getName(), "Fetching versions for itemId: " + itemId);
 
             HttpGet get = new HttpGet(endpoint);
             return executeRequest(get);
@@ -394,5 +394,98 @@ public class SharePointUtil {
             return null;
         }
     }
+
+    public String getEditLink(String siteId, String driveId, String itemId) {
+        try {
+            String endpoint = String.format(
+                    "https://graph.microsoft.com/v1.0/sites/%s/drives/%s/items/%s/createLink",
+                    siteId, driveId, itemId
+            );
+
+//            LogUtil.info(getClass().getName(), "Generating edit link for itemId: " + itemId);
+
+            // Create POST request
+            HttpPost post = new HttpPost(endpoint);
+            post.setHeader("Content-Type", "application/json");
+
+            // Body: request an editable link
+            JSONObject body = new JSONObject();
+            body.put("type", "edit");
+            body.put("scope", "organization"); // or "users" / "anonymous" based on your permission policy
+            post.setEntity(new StringEntity(body.toString(), "UTF-8"));
+
+            // Execute API request using your shared helper
+            ApiResponse response = executeRequest(post);
+
+            if (response != null && response.getResponseCode() >=200 && response.getResponseCode()<300 ) {
+                JSONObject json = new JSONObject(response.getResponseBody());
+                if (json.has("link")) {
+                    JSONObject link = json.getJSONObject("link");
+                    String editUrl = link.optString("webUrl", null);
+//                    LogUtil.info(getClass().getName(), "Edit link generated: " + editUrl);
+                    return editUrl;
+                } else {
+                    LogUtil.warn(getClass().getName(), "Edit link not found in response JSON.");
+                }
+            } else {
+                LogUtil.warn(getClass().getName(), "Failed to get edit link. Code: " +
+                        (response != null ? response.getResponseCode() : "null"));
+            }
+
+            return null;
+        } catch (Exception e) {
+            LogUtil.error(getClass().getName(), e, "Error generating edit link for itemId: " + itemId);
+            return null;
+        }
+    }
+
+    private String encodeFolderPath(String folderPath) {
+        if (folderPath == null || folderPath.isEmpty()) {
+            return folderPath;
+        }
+        String[] parts = folderPath.split("/");
+        return Arrays.stream(parts)
+                .map(part -> {
+                    try {
+                        return URLEncoder.encode(part, StandardCharsets.UTF_8.toString())
+                                .replace("+", "%20");
+                    } catch (Exception e) {
+                        LogUtil.error(getClass().getName(), e, "Error encoding folder path part: " + part);
+                        return part;
+                    }
+                })
+                .collect(Collectors.joining("/"));
+    }
+
+    public ApiResponse listFilesInFolder(
+            String siteId,
+            String driveId,
+            String folderPath
+    ) {
+        List<Map<String, String>> files = new ArrayList<>();
+
+        try {
+            if (folderPath == null) {
+                folderPath = "";
+            }
+
+            String encodedPath = encodeFolderPath(folderPath);
+
+            String endpoint = String.format(
+                    "https://graph.microsoft.com/v1.0/sites/%s/drives/%s/root:/%s:/children?$select=id,name,file",
+                    siteId,
+                    driveId,
+                    encodedPath
+            );
+
+            HttpGet get = new HttpGet(endpoint);
+            return   executeRequest(get);
+        } catch (Exception e) {
+            LogUtil.error(getClassName(), e,
+                    "Error listing files from SharePoint folder: " + folderPath);
+            return null;
+        }
+    }
+
 
 }

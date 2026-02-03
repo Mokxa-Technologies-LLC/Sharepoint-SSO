@@ -16,6 +16,7 @@ import org.joget.mokxa.util.FileServiceUtil;
 import org.joget.workflow.util.WorkflowUtil;
 import org.json.JSONObject;
 
+//import javax.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -24,7 +25,8 @@ public class FileUploadFormatter extends DataListColumnFormatDefault {
 
 
     public String getName() {
-        return AppPluginUtil.getMessage("org.joget.mokxa.fileUploadFormatter.pluginLabel", getClassName(), MESSAGE_PATH);
+        //return AppPluginUtil.getMessage("org.joget.mokxa.fileUploadFormatter.pluginLabel", getClassName(), MESSAGE_PATH);
+        return "File Upload Formatter";
     }
 
     public String getVersion() {
@@ -36,12 +38,14 @@ public class FileUploadFormatter extends DataListColumnFormatDefault {
     }
 
     public String getLabel() {
-        return AppPluginUtil.getMessage("org.joget.mokxa.fileUploadFormatter.pluginLabel", getClassName(), MESSAGE_PATH);
+        //return AppPluginUtil.getMessage("org.joget.mokxa.fileUploadFormatter.pluginLabel", getClassName(), MESSAGE_PATH);
+        return "File Upload Formatter";
     }
 
     public String getDescription() {
         //support i18n
-        return AppPluginUtil.getMessage("org.joget.mokxa.fileUploadFormatter.pluginDesc", getClassName(), MESSAGE_PATH);
+       // return AppPluginUtil.getMessage("org.joget.mokxa.fileUploadFormatter.pluginDesc", getClassName(), MESSAGE_PATH);
+        return "Direct Link to Download Files";
     }
 
     public String getPropertyOptions() {
@@ -72,7 +76,7 @@ public class FileUploadFormatter extends DataListColumnFormatDefault {
                 if (authResponse == null || authResponse.getResponseCode() != 200) {
                     LogUtil.warn(getClassName(), "SharePoint authentication failed or returned non-200.");
                 } else {
-                    LogUtil.info(getClassName(), "SharePoint authentication successful.");
+//                    LogUtil.info(getClassName(), "SharePoint authentication successful.");
                 }
             } catch (Exception ex) {
                 LogUtil.error(getClassName(), ex, "Unexpected error during SharePoint authentication.");
