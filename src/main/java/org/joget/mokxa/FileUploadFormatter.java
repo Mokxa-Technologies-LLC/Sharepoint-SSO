@@ -1,6 +1,6 @@
 package org.joget.mokxa;
 
-//import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.service.AppPluginUtil;
 import org.joget.apps.app.service.AppUtil;
@@ -16,7 +16,7 @@ import org.joget.mokxa.util.FileServiceUtil;
 import org.joget.workflow.util.WorkflowUtil;
 import org.json.JSONObject;
 
-import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -76,7 +76,7 @@ public class FileUploadFormatter extends DataListColumnFormatDefault {
                 if (authResponse == null || authResponse.getResponseCode() != 200) {
                     LogUtil.warn(getClassName(), "SharePoint authentication failed or returned non-200.");
                 } else {
-                    LogUtil.info(getClassName(), "SharePoint authentication successful.");
+//                    LogUtil.info(getClassName(), "SharePoint authentication successful.");
                 }
             } catch (Exception ex) {
                 LogUtil.error(getClassName(), ex, "Unexpected error during SharePoint authentication.");

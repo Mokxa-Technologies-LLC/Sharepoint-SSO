@@ -1,5 +1,8 @@
 package org.joget.mokxa;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.service.AppPluginUtil;
@@ -15,9 +18,10 @@ import org.joget.mokxa.model.ApiResponse;
 import org.joget.mokxa.util.FileServiceUtil;
 import org.json.JSONObject;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+//import javax.servlet.ServletException;
+//import javax.servlet.http.HttpServletRequest;
+//import javax.servlet.http.HttpServletResponse;
+
 
 
 import java.io.File;
@@ -66,7 +70,6 @@ public class FileUploadElement extends FileUpload {
 
     @Override
     public String renderTemplate(FormData formData, Map dataModel) {
-        //String template = "fileUpload.ftl";
         String template = "sharepointFileUpload.ftl";
         FileServiceUtil fileServiceUtil=null;
         try{
@@ -83,7 +86,7 @@ public class FileUploadElement extends FileUpload {
 
         String siteId = getPropertyString("siteId");
         String driveId = getPropertyString("driveId");
-        String sharePointPathField = getPropertyString("sharePointUploadPathField");
+
 
         JSONObject jsonParams = new JSONObject();
         Map<String, String> tempFilePaths = new HashMap<>();
@@ -95,19 +98,19 @@ public class FileUploadElement extends FileUpload {
         String appId = "";
         String appVersion = "";
 
+        // 1) Authenticate (best-effort). If fails, continue but set error in dataModel
         try {
-            // 1) Authenticate (best-effort). If fails, continue but set error in dataModel
             ApiResponse authResponse = fileServiceUtil.authenticate();
             if (authResponse == null || authResponse.getResponseCode() != 200) {
                 dataModel.put("error", "Authentication Failed");
                 LogUtil.warn(getClassName(), "SharePoint authentication failed or returned non-200.");
-            } else {
-                LogUtil.info(getClassName(), "SharePoint authentication successful.");
             }
         } catch (Exception ex) {
             LogUtil.error(getClassName(), ex, "Unexpected error during SharePoint authentication.");
             dataModel.put("error", "Authentication error: " + ex.getMessage());
         }
+
+
 
         // 2) Prepare values array defensively
         String[] values = FormUtil.getElementPropertyValues(this, formData);
@@ -116,7 +119,67 @@ public class FileUploadElement extends FileUpload {
         }
 
 
-        // aaaa) Strip itemId for UI display, but keep full mapping internally
+        if(getPropertyString("enableSyncFiles").equals("true")){
+            try {
+
+                Map<String, String> dbMap = buildDbMap(formData);
+                Map<String, String> spMap = buildSpMap( fileServiceUtil, resolveSafeUploadPath( getPropertyString("sharePointUploadPath"), formData));
+
+                //LogUtil.info(getClassName(),spMap.toString());
+                //LogUtil.info(getClassName(),dbMap.toString());
+                if (spMap.isEmpty()) {
+                    //LogUtil.info(getClassName(),"Sp is empty");
+
+                    if (!dbMap.isEmpty()) {
+                        FormRow row = new FormRow();
+                        String id = getPropertyString(FormUtil.PROPERTY_ID);
+                        row.setProperty(id, "");
+
+                        FormRowSet rs = new FormRowSet();
+                        rs.add(row);
+
+                        FormUtil.findStoreBinder(
+                                FormUtil.findRootForm(this)
+                        ).store(FormUtil.findRootForm(this),rs,formData);
+
+                       // LogUtil.info(getClassName(),"Sp is empty but db not empty , so cleared it");
+                    }
+
+                    values = new String[0];
+
+                } else {
+
+                    //LogUtil.info(getClassName(),"Sp is not empty");
+                    boolean[] changed = new boolean[]{false};
+                    LinkedHashSet<String> finalSet = syncValues(dbMap, spMap, changed);
+                    if (changed[0]) {
+                        silentSave(formData, finalSet);
+                    }
+
+                    // FINAL assignment of values (LAST)
+                    List<String> sortedList = new ArrayList<>(finalSet);
+
+                    sortedList.sort((a, b) -> {
+                        String nameA = a.contains("|") ? a.substring(0, a.indexOf('|')).trim() : a.trim();
+                        String nameB = b.contains("|") ? b.substring(0, b.indexOf('|')).trim() : b.trim();
+                        return nameA.compareToIgnoreCase(nameB);
+                    });
+
+                    values = sortedList.toArray(new String[0]);
+
+                    //LogUtil.info(getClassName(), "Final sorted values = " + Arrays.toString(values));
+
+                }
+
+            } catch (Exception e) {
+                LogUtil.warn(getClassName(),
+                        "SharePoint sync skipped: " + e.getMessage());
+            }
+        }
+
+
+
+        // 3) Strip itemId for UI display, but keep full mapping internally
         List<String> uiValues = new ArrayList<>();
         Map<String, String> fullMap = new LinkedHashMap<>();
         for (String v : values) {
@@ -169,7 +232,7 @@ public class FileUploadElement extends FileUpload {
                     if (value == null || value.trim().isEmpty()) {
                         continue;
                     }
-                    LogUtil.info("File",value);
+//                    LogUtil.info("File",value);
                     String fullValue = fullMap.get(value);
                     Map<String,String> fileMap = parseFileName(fullValue);
                     //Map<String,String> fileMap=parseFileName(value);
@@ -192,7 +255,6 @@ public class FileUploadElement extends FileUpload {
                     jsonParams.put("tenantId", getProperty("tenantId"));
                     jsonParams.put("client", getProperty("client"));
 
-                    LogUtil.info("Request Params",jsonParams.toString());
 
                     String safeParams = "";
                     try {
@@ -202,23 +264,16 @@ public class FileUploadElement extends FileUpload {
                         safeParams = URLEncoder.encode(jsonParams.toString(), "UTF-8");
                     }
 
-                    String filePath = "/web/json/app/" + appId + "/" + appVersion
-                            + "/plugin/" + this.getClassName() + "/service?action=download&params=" + safeParams;
-                    LogUtil.info("Filepaths:",filePath);
-
-                    String editLink= "/web/json/app/" + appId + "/" + appVersion
-                            + "/plugin/" + this.getClassName() + "/service?action=edit&mode=web&params=" + safeParams;
-
-                    String editTeamsLink= "/web/json/app/" + appId + "/" + appVersion
-                            + "/plugin/" + this.getClassName() + "/service?action=edit&mode=teams&params=" + safeParams;
-
-                    String editNativeLink= "/web/json/app/" + appId + "/" + appVersion
-                            + "/plugin/" + this.getClassName() + "/service?action=edit&mode=native&params=" + safeParams;
+                    String filePath = "/web/json/app/" + appId + "/" + appVersion + "/plugin/" + this.getClassName() + "/service?action=download&params=" + safeParams;
+                    String editLink= "/web/json/app/" + appId + "/" + appVersion + "/plugin/" + this.getClassName() + "/service?action=edit&mode=web&params=" + safeParams;
+                    String editTeamsLink= "/web/json/app/" + appId + "/" + appVersion + "/plugin/" + this.getClassName() + "/service?action=edit&mode=teams&params=" + safeParams;
+                    String editNativeLink= "/web/json/app/" + appId + "/" + appVersion + "/plugin/" + this.getClassName() + "/service?action=edit&mode=native&params=" + safeParams;
 
                     filePaths.put(filePath, value);
                     editLinks.put(value,editLink);
                     editTeamsLinks.put(value,editTeamsLink);
                     editNativeLinks.put(value,editNativeLink);
+
                 } catch (Exception ex) {
                     LogUtil.error(getClassName(), ex, "Error processing value: " + value);
                 }
@@ -228,6 +283,7 @@ public class FileUploadElement extends FileUpload {
         // 5) Put maps into dataModel for Freemarker template
         try {
             dataModel.put("tempFilePaths", tempFilePaths);
+//            LogUtil.info("Temp File Paths: ",tempFilePaths.toString());
             dataModel.put("filePaths", filePaths);
             dataModel.put("editLinks", editLinks);
             dataModel.put("editTeamsLinks", editTeamsLinks);
@@ -239,7 +295,7 @@ public class FileUploadElement extends FileUpload {
         // 6) Render template — ensure we never return null; return an HTML error fragment if rendering fails
         try {
             String html = FormUtil.generateElementHtml(this, formData, template, dataModel);
-            LogUtil.info("Html",html);
+           // LogUtil.info("Html",html);
             if (html == null) {
                 LogUtil.warn(getClassName(), "Generated HTML is null; returning fallback error HTML.");
                 html = "<div class=\"form-fileupload\">Error rendering file upload control.</div>";
@@ -264,7 +320,7 @@ public class FileUploadElement extends FileUpload {
     @Override
     public FormData formatDataForValidation(FormData formData) {
         try {
-            LogUtil.info(getClassName(), "Set validations started");
+//            LogUtil.info(getClassName(), "Set validations started");
             String filePathPostfix = "_path";
             String id = FormUtil.getElementParameterName(this);
             if (id == null) return formData;
@@ -307,7 +363,7 @@ public class FileUploadElement extends FileUpload {
                 formData.addRequestParameterValues(id, filenames.toArray(new String[0]));
             }
 
-            LogUtil.info(getClassName(), "Set validations finished");
+//            LogUtil.info(getClassName(), "Set validations finished");
         } catch (Exception e) {
             LogUtil.error(getClassName(), e, "Exception during validation");
             formData.addFormError(FormUtil.getElementParameterName(this), "System Error: See system logs");
@@ -387,7 +443,7 @@ public class FileUploadElement extends FileUpload {
             String itemId = fileMap.get("fileId");
             ApiResponse delResp = fileService.deleteFile(itemId);
             if (delResp != null && (delResp.getResponseCode() == 200 || delResp.getResponseCode() == 204)) {
-                LogUtil.info(getClassName(), "Deleted removed file from SharePoint: " + filename);
+//                LogUtil.info(getClassName(), "Deleted removed file from SharePoint: " + filename);
             } else {
                 LogUtil.warn(getClassName(), "Failed to delete removed file: " + filename + " → " + (delResp != null ? delResp.getResponseBody() : "no response"));
             }
@@ -425,7 +481,7 @@ public class FileUploadElement extends FileUpload {
                         dresp = fileService.deleteFile(fullPath);
                     }
                     if (dresp != null && (dresp.getResponseCode() == 200 || dresp.getResponseCode() == 204)) {
-                        LogUtil.info(getClassName(), "Deleted (replace mode) remote file before re-upload: " + fullPath);
+//                        LogUtil.info(getClassName(), "Deleted (replace mode) remote file before re-upload: " + fullPath);
                     }
                     String ItemId = fileService.uploadFile(uploadPath, file);
                     if (ItemId != null) {
@@ -433,7 +489,7 @@ public class FileUploadElement extends FileUpload {
                         existingSet.removeIf(f -> f.startsWith(fileName + "|") || f.equals(fileName));
                         keptExisting.removeIf(f -> f.startsWith(fileName + "|") || f.equals(fileName));
                         uploadedNames.add(fileName + "|" + ItemId);
-                        LogUtil.info(getClassName(), "Replaced file on SharePoint: " + fullPath);
+//                        LogUtil.info(getClassName(), "Replaced file on SharePoint: " + fullPath);
                         fileService.storeMetaToJoget(getProperties(),itemId,AppUtil.processHashVariable("#currentUser.username#",null,null,null));
                     } else {
                         formData.addFormError(id, "Failed to upload (replace) " + fileName);
@@ -444,7 +500,7 @@ public class FileUploadElement extends FileUpload {
                         //uploadedNames.add(fileName);
                         keptExisting.removeIf(f -> f.startsWith(fileName + "|") || f.equals(fileName));
                         uploadedNames.add(fileName + "|" + ItemId);
-                        LogUtil.info(getClassName(), "Uploaded new Version file on SharePoint: " + fullPath);
+//                        LogUtil.info(getClassName(), "Uploaded new Version file on SharePoint: " + fullPath);
                         fileService.storeMetaToJoget(getProperties(),ItemId,AppUtil.processHashVariable("#currentUser.username#",null,null,null));
                     } else {
                         formData.addFormError(id, "Failed to update/upload " + fileName);
@@ -455,7 +511,7 @@ public class FileUploadElement extends FileUpload {
                 if (ItemId != null) {
                     //uploadedNames.add(fileName);
                     uploadedNames.add(fileName + "|" + ItemId);
-                    LogUtil.info(getClassName(), "Uploaded new file on SharePoint: " + fullPath);
+//                    LogUtil.info(getClassName(), "Uploaded new file on SharePoint: " + fullPath);
                     fileService.storeMetaToJoget(getProperties(),ItemId,AppUtil.processHashVariable("#currentUser.username#",null,null,null));
                 } else {
                     formData.addFormError(id, "Failed to upload " + fileName);
@@ -499,7 +555,7 @@ public class FileUploadElement extends FileUpload {
 
             String params = SecurityUtil.decrypt(request.getParameter("params"));
             JSONObject jsonParams = new JSONObject(params);
-            LogUtil.info("Json Params",jsonParams.toString());
+//            LogUtil.info("Json Params",jsonParams.toString());
 
             Map config= new HashMap();
             String client = jsonParams.getString("client");
@@ -518,8 +574,6 @@ public class FileUploadElement extends FileUpload {
 
                 config.put("siteId",siteId);
                 config.put("driveId",driveId);
-                //config.put("sharePointPath",sharePointPath);
-                //config.put("itemId",itemId);
                 config.put("clientId",clientId);
                 config.put("clientSecret",clientSecret);
                 config.put("tenantId",tenantId);
@@ -532,13 +586,13 @@ public class FileUploadElement extends FileUpload {
             FileServiceUtil fileServiceUtil = new FileServiceUtil(config);
             String downloadLink = fileServiceUtil.downloadFile(filePath);
 
-            LogUtil.info("Download: ",downloadLink);
+//            LogUtil.info("Download: ",downloadLink);
             response.sendRedirect(downloadLink);
         }
         else if ("edit".equals(action)) {
             String params = SecurityUtil.decrypt(request.getParameter("params"));
             JSONObject jsonParams = new JSONObject(params);
-            LogUtil.info("Json Params",jsonParams.toString());
+//            LogUtil.info("Json Params",jsonParams.toString());
 
             Map config= new HashMap();
             String client = jsonParams.getString("client");
@@ -558,8 +612,6 @@ public class FileUploadElement extends FileUpload {
 
                 config.put("siteId",siteId);
                 config.put("driveId",driveId);
-                //config.put("sharePointPath",sharePointPath);
-                //config.put("itemId",itemId);
                 config.put("clientId",clientId);
                 config.put("clientSecret",clientSecret);
                 config.put("tenantId",tenantId);
@@ -577,10 +629,8 @@ public class FileUploadElement extends FileUpload {
                 );
             }else if(mode.equals("native")){
                 String scheme = "ms-word:ofe|u|";
-//                downloadLink=scheme+downloadLink;
                 downloadLink=scheme+fileServiceUtil.getFilePath(itemId);
             }
-            LogUtil.info("Edit Link: ",downloadLink);
             response.sendRedirect(downloadLink);
         } else {
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -635,10 +685,123 @@ public class FileUploadElement extends FileUpload {
             resultMap.put("filename", filename);
             resultMap.put("fileId", documentId);
         } else {
-            LogUtil.info(getClassName(), "Invalid input format.");
+//            LogUtil.info(getClassName(), "Invalid input format.");
         }
 
         return resultMap;
+    }
+
+
+    private Map<String, String> buildDbMap(FormData formData) {
+        Map<String, String> dbMap = new LinkedHashMap<>();
+
+        try {
+            Form rootForm = FormUtil.findRootForm(this);
+            String id = getPropertyString(FormUtil.PROPERTY_ID);
+
+            String storedValue =
+                    formData.getLoadBinderDataProperty(rootForm, id);
+
+            if (storedValue != null && !storedValue.trim().isEmpty()) {
+                for (String v : storedValue.split(";")) {
+                    if (v == null || v.trim().isEmpty()) continue;
+
+                    String[] parts = v.split("\\|");
+                    String filename = parts[0];
+                    dbMap.put(filename, v);
+                }
+            }
+        } catch (Exception e) {
+            LogUtil.warn(getClassName(), "Error building DB map: " + e.getMessage());
+        }
+
+        return dbMap;
+    }
+
+
+
+    private Map<String, String> buildSpMap(
+            FileServiceUtil fileServiceUtil,
+            String uploadPath
+    ) {
+        Map<String, String> spMap = new LinkedHashMap<>();
+
+        try {
+            List<Map<String, String>> spFiles = fileServiceUtil.listFilesFromFolder(uploadPath);
+
+            for (Map<String, String> f : spFiles) {
+                String name = f.get("name");
+                String id   = f.get("id");
+
+                if (name != null && id != null) {
+                    spMap.put(name, id);
+                }
+            }
+        } catch (Exception e) {
+            LogUtil.warn(getClassName(), "Error building SP map: " + e.getMessage());
+        }
+
+        return spMap;
+    }
+
+    private LinkedHashSet<String> syncValues(
+            Map<String, String> dbMap,
+            Map<String, String> spMap,
+            boolean[] changedFlag
+    ) {
+        LinkedHashSet<String> finalSet = new LinkedHashSet<>();
+        boolean changed = false;
+
+        // Add / update from SharePoint
+        for (Map.Entry<String, String> e : spMap.entrySet()) {
+            String filename = e.getKey();
+            String itemId   = e.getValue();
+
+            String dbVal = dbMap.get(filename);
+            String newVal = filename + "|" + itemId;
+
+            if (dbVal == null || !dbVal.equals(newVal)) {
+                changed = true;
+            }
+            finalSet.add(newVal);
+        }
+
+        // Detect removed files
+        for (String dbFilename : dbMap.keySet()) {
+            if (!spMap.containsKey(dbFilename)) {
+                changed = true;
+            }
+        }
+
+        changedFlag[0] = changed;
+        return finalSet;
+    }
+
+
+    private void silentSave(
+            FormData formData,
+            LinkedHashSet<String> finalSet
+    ) {
+        try {
+            FormRow row = new FormRow();
+            String id = getPropertyString(FormUtil.PROPERTY_ID);
+
+            row.setProperty(
+                    id,
+                    FormUtil.generateElementPropertyValues(
+                            finalSet.toArray(new String[0])
+                    )
+            );
+
+            FormRowSet rs = new FormRowSet();
+            rs.add(row);
+
+            FormUtil.findStoreBinder(
+                    FormUtil.findRootForm(this)
+            ).store(FormUtil.findRootForm(this),rs,formData);
+        } catch (Exception e) {
+            LogUtil.warn(getClassName(), "Silent save failed: " + e.getMessage());
+        }
     }
 
 }

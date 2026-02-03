@@ -40,7 +40,7 @@
             </#if>
            <#if filePaths??>
                <#list filePaths?keys as key>
-                   <li class="file-item" style="position:relative;">
+                   <li class="file-item" data-filename="${filePaths[key]!?html}" style="position:relative;">
                        <a href="${request.contextPath}${key!?html}" target="_blank">
                            <span class="name">${filePaths[key]!?html}</span>
                        </a>
@@ -83,7 +83,7 @@
                                        ">
                                            <li class="submenu-item open-web" style="padding:8px 12px;cursor:pointer;">Open in Web</li>
                                            <li class="submenu-item open-teams" style="padding:8px 12px;cursor:pointer;">Open in Teams</li>
-                                           <li class="submenu-item open-native" style="padding:8px 12px;cursor:pointer;">Open in Word App</li>
+                                           <li class="submenu-item open-native" style="padding:8px 12px;cursor:pointer;">Open in Word</li>
                                        </ul>
                                    </li>
                                </ul>
@@ -162,6 +162,19 @@
                         }
 
                         $(".menu-dropdown").hide(); // close menu after click
+                    });
+
+                    $(".file-item").each(function () {
+                        const filename = $(this).data("filename");
+                        if (!filename) return;
+
+                        const lower = filename.toLowerCase();
+
+                        // Show native edit ONLY for .docx
+                        if (!lower.endsWith(".docx")) {
+                            $(this).find(".open-native").remove();
+                            $(this).find(".open-teams").remove();
+                        }
                     });
 
             });
