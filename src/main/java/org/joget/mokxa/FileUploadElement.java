@@ -119,7 +119,7 @@ public class FileUploadElement extends FileUpload {
         }
 
 
-        if(getPropertyString("enableSyncFiles").equals("true")){
+        if(getPropertyString("enableSyncFiles").equals("true") &&  formData.getRequestParameter("id")!=null && !formData.getRequestParameter("id").trim().isEmpty()){
             try {
 
                 Map<String, String> dbMap = buildDbMap(formData);

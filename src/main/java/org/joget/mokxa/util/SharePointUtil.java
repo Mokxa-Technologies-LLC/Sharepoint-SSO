@@ -136,6 +136,8 @@ public class SharePointUtil {
     }
 
     public String createFile(String siteId, String driveId,String folderPath, File file) {
+
+        String itemId=null;
         try {
             // Ensure folder exists before upload
             if (folderPath != null && !folderPath.trim().isEmpty()) {
@@ -158,14 +160,14 @@ public class SharePointUtil {
 
                 HttpPut put = new HttpPut(endpoint);
                 put.setEntity(new FileEntity(file, ContentType.DEFAULT_BINARY));
-                //LogUtil.info(getClass().getName(), "Uploading small file: " + file.getName());
+                LogUtil.info(getClass().getName(), "Uploading small file: " + file.getName());
 
                 ApiResponse apiResponse= executeRequest(put);
-                String itemId =getItemIdFromApiResponse(apiResponse);
+                itemId =getItemIdFromApiResponse(apiResponse);
                 return itemId;
             } else {
                 // Large file upload (resumable session)
-                //LogUtil.info(getClass().getName(), "Starting resumable upload for large file: " + file.getName());
+                LogUtil.info(getClass().getName(), "Starting resumable upload for large file: " + file.getName());
 
                 String createSessionEndpoint = String.format(
                         "https://graph.microsoft.com/v1.0/sites/%s/drives/%s/root:%s/%s:/createUploadSession",
@@ -213,11 +215,13 @@ public class SharePointUtil {
                             return null;
                         }
 
+                        LogUtil.info(getClass().getName(),"Chunk Response: "+chunkResp.getResponseBody());
+                        itemId =getItemIdFromApiResponse(chunkResp);
                         uploaded += bytesRead;
                     }
 
-                    //LogUtil.info(getClass().getName(), "Resumable upload completed for file: " + file.getName());
-                    String itemId =getItemIdFromApiResponse(sessionResp);
+                    LogUtil.info(getClass().getName(), "Resumable upload completed for file: " + file.getName());
+
                     return itemId;
                 }
             }
@@ -309,8 +313,10 @@ public class SharePointUtil {
             }
             JSONObject response = new JSONObject(apiResponse.getResponseBody());
             String itemId = response.optString("id", null);
+            LogUtil.info(getClassName(), "Extracted Session Response: " + response.toString());
 
-            //LogUtil.info(getClassName(), "Extracted drive item ID: " + itemId);
+
+            LogUtil.info(getClassName(), "Extracted drive item ID: " + itemId);
             return itemId;
         } catch (Exception e) {
             LogUtil.error(getClassName(), e, "Failed to extract item ID from API response.");
