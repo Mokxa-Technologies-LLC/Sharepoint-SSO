@@ -240,7 +240,7 @@ public class SharePointUtil {
                     siteId, driveId, itemId);
 
             HttpGet get = new HttpGet(endpoint);
-            //LogUtil.info(getClass().getName(), "Fetching file itemId: " + itemId);
+            LogUtil.info(getClass().getName(), "Fetching file itemId: " + itemId);
             return executeRequest(get);
         } catch (Exception e) {
             LogUtil.error(getClass().getName(), e, "Error fetching file itemId: " + itemId);
