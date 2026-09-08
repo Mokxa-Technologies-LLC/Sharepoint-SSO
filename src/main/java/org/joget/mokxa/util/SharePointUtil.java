@@ -47,7 +47,7 @@ public class SharePointUtil {
         //LogUtil.info(getClass().getName(), "Authenticating with Microsoft Graph API...");
         String tokenUrl = "https://login.microsoftonline.com/" + tenantId + "/oauth2/v2.0/token";
 
-        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+        try (CloseableHttpClient client = HttpClientBuilder.create().useSystemProperties().build()) {
             HttpPost post = new HttpPost(tokenUrl);
             post.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -81,7 +81,7 @@ public class SharePointUtil {
 
     private ApiResponse executeRequest(HttpUriRequest request) {
         ApiResponse apiResponse = new ApiResponse();
-        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+        try (CloseableHttpClient client = HttpClientBuilder.create().useSystemProperties().build()) {
 
             if(accessToken==null){
                 authenticate();
